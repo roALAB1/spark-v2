@@ -274,3 +274,19 @@ Fixed: Rewrote CSV parser to use character-by-character parsing with quote state
 - [ ] Test alternative endpoint paths
 - [ ] Update API client with correct format
 - [ ] Validate fix with tests
+
+
+---
+
+## POST /audiences Testing (Option A - Complete)
+
+- [x] Write test for POST /audiences with minimal payload
+- [x] Write test for POST /audiences with complex filters
+- [x] Write test for input validation (empty name, invalid operator)
+- [x] Write test for response schema validation
+- [x] Run all tests and verify they pass
+- [x] Update API_REFERENCE.md with validated status
+- [x] Update API_TESTING.md with test results
+- [x] Captured REAL format from dashboard: POST /home/{teamSlug}
+- [x] Documented actual request format in REAL_POST_AUDIENCES_FORMAT.md
+- [x] Discovered: api.audiencelab.io/audiences doesn't work, use build.audiencelab.io/home/{teamSlug}
