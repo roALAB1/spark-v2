@@ -253,15 +253,20 @@ export default function EnrichmentUploadPage() {
               <Button
                 onClick={() => {
                   setFieldMappings(prev =>
-                    prev.map(mapping => ({ ...mapping, mappedField: 'DO_NOT_IMPORT', isAutoMapped: false }))
+                    prev.map(mapping => 
+                      mapping.mappedField !== 'DO_NOT_IMPORT'
+                        ? { ...mapping, mappedField: 'DO_NOT_IMPORT', isAutoMapped: false }
+                        : mapping
+                    )
                   );
-                  toast.success('All fields set to "Do Not Import"');
+                  const changedCount = fieldMappings.filter(m => m.mappedField !== 'DO_NOT_IMPORT').length;
+                  toast.success(`${changedCount} field(s) set to "Do Not Import"`);
                 }}
                 variant="outline"
                 size="sm"
                 className="text-red-600 border-red-300 hover:bg-red-50"
               >
-                DO NOT IMPORT ALL
+                DO NOT IMPORT REST
               </Button>
             </div>
 

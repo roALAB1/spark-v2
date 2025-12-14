@@ -1028,3 +1028,15 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [x] Update validation logic to treat "DO_NOT_IMPORT" as unmapped (already handled)
 - [x] Update API submission to filter out "DO_NOT_IMPORT" fields
 - [x] Test in browser to verify error is resolved (no console errors)
+
+
+---
+
+## Fix Dropdown Display and Bulk Action Issues (URGENT)
+
+- [x] Remove duplicate "Do Not Import" from AVAILABLE_FIELDS (removed from list)
+- [x] Fix display showing "Do Not ImportDo Not Import" concatenation (fixed by removing duplicate)
+- [x] Change button text from "DO NOT IMPORT ALL" to "DO NOT IMPORT REST"
+- [x] Update button logic to only change fields NOT already set to DO_NOT_IMPORT
+- [x] Test that unmapped fields default to DO_NOT_IMPORT (changed detectFieldType return)
+- [x] Test that button only affects mapped fields (conditional mapping logic)

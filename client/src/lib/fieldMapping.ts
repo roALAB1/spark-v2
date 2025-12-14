@@ -44,10 +44,7 @@ export const AVAILABLE_FIELDS: AvailableField[] = [
   { value: 'LINKEDIN_URL', label: 'LinkedIn URL', category: 'Business' },
   
   // System Fields
-  { value: 'UP_ID', label: 'UP ID', category: 'System' },
-  
-  // Special
-  { value: 'DO_NOT_IMPORT', label: 'Do Not Import', category: 'Special' }
+  { value: 'UP_ID', label: 'UP ID', category: 'System' }
 ];
 
 /**
@@ -194,8 +191,8 @@ function detectFieldType(
     return { field: 'UP_ID', confidence: 80 };
   }
   
-  // No match found
-  return { field: null, confidence: 0 };
+  // No match found - default to DO_NOT_IMPORT
+  return { field: 'DO_NOT_IMPORT', confidence: 0 };
 }
 
 /**
