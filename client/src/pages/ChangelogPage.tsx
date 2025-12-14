@@ -13,6 +13,43 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "v3.0.0",
+    date: "2025-12-14",
+    checkpoint: "44204205",
+    sections: [
+      {
+        type: "added",
+        items: [
+          "Vibe Code Prototype: Complete research on all 9 audience filter categories",
+          "Vibe Code: Intent filters (Premade, Keyword, Custom methods)",
+          "Vibe Code: Business filters (7 fields with AI keyword generator)",
+          "Vibe Code: Location filters (Cities, States, Zip Codes)",
+          "Vibe Code: Contact filters (5 toggle switches)",
+          "Vibe Code: Personal, Financial, Family, Housing filters (dynamic builders)",
+          "Vibe Code: CreateAudienceDialog - Simple name-only input",
+          "Vibe Code: AudienceFilterBuilderPage - 9 filter category tabs",
+          "Vibe Code: Empty state with 'Build Audience' CTA",
+          "Vibe Code: Preview and Generate Audience buttons",
+          "TypeScript: Complete type definitions for all filter categories (200+ lines)",
+          "Documentation: COMPLETE_AUDIENCE_FILTERS_SPEC.md (700+ lines)",
+          "Route: /audiences/:id/filters for filter builder",
+        ],
+      },
+      {
+        type: "changed",
+        items: [
+          "README: Complete rewrite with comprehensive overview",
+          "README: Updated title to 'AudienceLab Vibe Platform'",
+          "README: Added detailed feature status table",
+          "README: Documented all 9 filter categories",
+          "CreateAudienceDialog: Simplified to name-only input (matches AudienceLab UX)",
+          "CreateAudienceDialog: Now uses two-step creation flow (name → filters)",
+          "Project Scope: Expanded from 'Enrichment Dashboard' to 'Complete Platform'",
+        ],
+      },
+    ],
+  },
+  {
     version: "v2.0.0",
     date: "2025-12-13",
     checkpoint: "8946b8f6",

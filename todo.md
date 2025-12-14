@@ -1345,3 +1345,43 @@ Focus on Business, Location, Intent, and Contact filters first - these cover mos
 - [x] Verify no TypeScript errors
 - [x] Verify dev server runs without errors
 
+
+
+---
+
+## URGENT: Fix Enrichment Submission Bug + GitHub Updates
+
+### Phase 1: Fix Enrichment Submission
+- [ ] Debug enrichment field selection flow
+- [ ] Test enrichment job submission to AudienceLab API
+- [ ] Verify enrichment results are returned
+- [ ] Fix any API errors or validation issues
+- [ ] Test end-to-end: upload CSV → select fields → submit → view results
+
+### Phase 2: GitHub Updates
+- [ ] Update README.md with comprehensive project overview
+- [ ] Update CHANGELOG.md with all recent features
+- [ ] Create proper commit messages for all changes
+- [ ] Push all code changes to GitHub
+- [ ] Verify GitHub repository is up to date
+
+### Phase 3: GitHub Release & Tags
+- [ ] Create version tag (e.g., v1.0.0)
+- [ ] Create GitHub release with release notes
+- [ ] Add release assets if needed
+- [ ] Document breaking changes (if any)
+
+### Phase 4: In-App Changelog
+- [ ] Update ChangelogPage.tsx with recent features
+- [ ] Add Vibe Code prototype entry
+- [ ] Add enrichment fixes entry
+- [ ] Add any other recent updates
+- [ ] Test changelog page displays correctly
+
+### Phase 5: Vibe Dashboard Roadmap
+- [ ] Document complete roadmap for finishing audience creation
+- [ ] Prioritize remaining features
+- [ ] Estimate time for each phase
+- [ ] Identify MVP vs nice-to-have features
+- [ ] Create implementation plan
+
