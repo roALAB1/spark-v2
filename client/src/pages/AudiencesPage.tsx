@@ -2,105 +2,168 @@ import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Plus, Search, Trash2, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Plus, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import CreateAudienceDialog from '@/components/audiences/CreateAudienceDialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+type SortField = 'name' | 'creation_date' | 'last_refreshed' | 'audience_size' | 'refresh_count' | 'next_refresh';
+type SortDirection = 'asc' | 'desc' | null;
 
 export default function AudiencesPage() {
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [audienceToDelete, setAudienceToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [sortField, setSortField] = useState<SortField>('creation_date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // Fetch audiences
   const { data, isLoading, error, refetch } = trpc.audienceLabAPI.audiences.list.useQuery({
     page,
-    pageSize,
+    pageSize: 1000, // Fetch all for client-side sorting/filtering
   });
 
-  // Delete mutation
-  const deleteMutation = trpc.audienceLabAPI.audiences.delete.useMutation({
-    onSuccess: () => {
-      toast.success('Audience deleted successfully');
-      refetch();
-      setDeleteDialogOpen(false);
-      setAudienceToDelete(null);
-    },
-    onError: (error: any) => {
-      toast.error(`Failed to delete audience: ${error.message}`);
-    },
-  });
-
-  const handleDelete = (id: string, name: string) => {
-    setAudienceToDelete({ id, name });
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (audienceToDelete) {
-      deleteMutation.mutate({ id: audienceToDelete.id });
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: null -> asc -> desc -> null
+      if (sortDirection === null) {
+        setSortDirection('asc');
+      } else if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortDirection(null);
+        setSortField('creation_date'); // Reset to default
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  // Filter audiences by search query
-  const filteredAudiences = data?.data.filter((audience: any) =>
-    audience.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const handleRefresh = async (audienceId: string) => {
+    toast.info('Refresh functionality coming soon');
+    // TODO: Implement refresh API call
+  };
+
+  // Filter and sort audiences
+  let processedAudiences = data?.data || [];
+  
+  // Apply search filter
+  if (searchQuery) {
+    processedAudiences = processedAudiences.filter((audience: any) =>
+      audience.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  // Apply sorting
+  if (sortDirection) {
+    processedAudiences = [...processedAudiences].sort((a: any, b: any) => {
+      let aVal, bVal;
+      
+      switch (sortField) {
+        case 'name':
+          aVal = a.name || '';
+          bVal = b.name || '';
+          break;
+        case 'creation_date':
+          aVal = new Date(a.created_at || 0).getTime();
+          bVal = new Date(b.created_at || 0).getTime();
+          break;
+        case 'last_refreshed':
+          aVal = new Date(a.last_refreshed || 0).getTime();
+          bVal = new Date(b.last_refreshed || 0).getTime();
+          break;
+        case 'audience_size':
+          aVal = a.audience_size || 0;
+          bVal = b.audience_size || 0;
+          break;
+        case 'refresh_count':
+          aVal = a.refresh_count || 0;
+          bVal = b.refresh_count || 0;
+          break;
+        case 'next_refresh':
+          aVal = new Date(a.next_scheduled_refresh || 0).getTime();
+          bVal = new Date(b.next_scheduled_refresh || 0).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortDirection === 'asc') {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+  }
+
+  // Apply pagination
+  const totalItems = processedAudiences.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedAudiences = processedAudiences.slice(startIndex, endIndex);
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3 h-3 ml-1 inline" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ArrowUp className="w-3 h-3 ml-1 inline" />;
+    }
+    if (sortDirection === 'desc') {
+      return <ArrowDown className="w-3 h-3 ml-1 inline" />;
+    }
+    return <ArrowUpDown className="w-3 h-3 ml-1 inline" />;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Audiences</h1>
-                <p className="text-sm text-gray-600">Manage your audience segments and filters</p>
-              </div>
-            </div>
-            <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Audience
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">Audience Lists</h1>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Search Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        {/* Search and Create */}
+        <div className="mb-6 flex items-center gap-4">
+          <div className="flex-1">
             <Input
-              placeholder="Search audiences..."
+              placeholder="Search by name..."
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md"
             />
           </div>
+          <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            Create
+          </Button>
         </div>
 
         {/* Loading State */}
         {isLoading && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+          <div className="bg-white rounded-lg shadow p-12">
             <div className="flex justify-center items-center">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
@@ -109,97 +172,209 @@ export default function AudiencesPage() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+          <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-red-900 mb-2">Error Loading Audiences</h3>
             <p className="text-sm text-red-700">{error.message}</p>
           </div>
         )}
 
-        {/* Audiences List */}
+        {/* Table */}
         {!isLoading && !error && (
-          <>
-            {filteredAudiences.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  {searchQuery ? 'No audiences found matching your search.' : 'No audiences yet. Create your first audience to get started.'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredAudiences.map((audience: any) => (
-                  <div key={audience.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{audience.name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">ID: {audience.id}</p>
-                        <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-                          {audience.next_scheduled_refresh && (
-                            <span>Next Refresh: {new Date(audience.next_scheduled_refresh).toLocaleString()}</span>
-                          )}
-                          {audience.scheduled_refresh !== undefined && (
-                            <span>Scheduled Refresh: {audience.scheduled_refresh ? 'Enabled' : 'Disabled'}</span>
-                          )}
-                          {audience.refresh_interval && (
-                            <span>Interval: {audience.refresh_interval}h</span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(audience.id, audience.name)}
-                        disabled={deleteMutation.isPending}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('name')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Name
+                      {getSortIcon('name')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('creation_date')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Creation Date
+                      {getSortIcon('creation_date')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('last_refreshed')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Last Refreshed
+                      {getSortIcon('last_refreshed')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('audience_size')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Audience Size
+                      {getSortIcon('audience_size')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('refresh_count')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Refresh Count
+                      {getSortIcon('refresh_count')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('next_refresh')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Next Refresh
+                      {getSortIcon('next_refresh')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedAudiences.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                      {searchQuery ? 'No audiences found matching your search.' : 'No audiences yet.'}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedAudiences.map((audience: any) => (
+                    <tr key={audience.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {audience.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {audience.audience_size === 0 ? (
+                          <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
+                            No Data
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                            Completed
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(audience.created_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(audience.last_refreshed)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {audience.audience_size?.toLocaleString() || '0'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {audience.refresh_count || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(audience.next_scheduled_refresh)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button
+                          onClick={() => handleRefresh(audience.id)}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Refresh audience"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
 
             {/* Pagination */}
-            {data && data.total > pageSize && (
-              <div className="flex justify-center items-center gap-4 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="border-gray-300"
+            <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">Rows per page</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(value) => {
+                    setPageSize(parseInt(value));
+                    setPage(1);
+                  }}
                 >
-                  Previous
-                </Button>
-                <span className="text-sm text-gray-600">
-                  Page {page} of {Math.ceil(data.total / pageSize)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page >= Math.ceil(data.total / pageSize)}
-                  className="border-gray-300"
-                >
-                  Next
-                </Button>
+                  <SelectTrigger className="w-16">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
-          </>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700">
+                  Page {page} of {totalPages || 1}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1}
+                  >
+                    «
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    ‹
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    ›
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page >= totalPages}
+                  >
+                    »
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
+      </div>
 
-        {/* Info Card */}
-        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mt-8">
-          <h3 className="font-semibold text-blue-900 mb-2">
-            💡 About Audiences
-          </h3>
-          <ul className="space-y-2 text-sm text-blue-800">
-            <li>• Create targeted audience segments based on specific criteria</li>
-            <li>• Schedule automatic refreshes to keep your audiences up-to-date</li>
-            <li>• Use audiences across your campaigns and enrichment workflows</li>
-            <li>• Monitor audience size and refresh status in real-time</li>
-          </ul>
-        </div>
-      </main>
+      {/* Create Audience Dialog */}
+      <CreateAudienceDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={() => {
+          refetch();
+          setCreateDialogOpen(false);
+        }}
+      />
     </div>
   );
 }

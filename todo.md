@@ -781,3 +781,85 @@ See CHANGELOG_PAGE_TEST.md for comprehensive test results!
 - Clean, minimal design matching AudienceLab exactly
 
 See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for details!
+
+
+---
+
+## Connect Upload Functionality to Real API
+
+- [ ] Add file upload handler to EnrichmentUploadPage
+- [ ] Connect Submit button to tRPC enrichment.createJob mutation
+- [ ] Send CSV file to AudienceLab API
+- [ ] Auto-generate enrichment name from timestamp
+- [ ] Show loading state during upload
+- [ ] Show success toast and redirect to enrichments list
+- [ ] Handle errors gracefully with error messages
+- [ ] Test upload with real CSV file
+
+
+---
+
+## Add Download Results for Completed Enrichments
+
+- [ ] Add Download button to completed enrichments in table
+- [ ] Create tRPC enrichment.downloadResults procedure
+- [ ] Fetch enriched data from AudienceLab API
+- [ ] Generate CSV file from results
+- [ ] Trigger browser download
+- [ ] Show loading toast during download
+- [ ] Handle errors gracefully
+- [ ] Test download with completed enrichment
+
+
+---
+
+## Simplify Audiences Page to Match AudienceLab
+
+- [ ] Research AudienceLab Audiences page layout
+- [ ] Remove fancy features from AudiencesPage
+- [ ] Simplify to basic table with Name, Size, Created Date
+- [ ] Keep only Create Audience button
+- [ ] Update CreateAudienceDialog to match AudienceLab
+- [ ] Test simplified Audiences page
+
+
+---
+
+## Simplify Pixels Page to Match AudienceLab
+
+- [ ] Research AudienceLab Pixels page layout
+- [ ] Remove fancy features from PixelsPage
+- [ ] Simplify to basic table with Name, Install URL, Created Date
+- [ ] Keep only Create Pixel button
+- [ ] Update CreatePixelDialog to match AudienceLab
+- [ ] Test simplified Pixels page
+
+
+---
+
+## Update Pages to Match AudienceLab Exactly (December 13, 2025)
+
+### Audiences Page - Carbon Copy
+- [ ] Update AudiencesPage to show all 7 columns: Name, Status, Creation Date, Last Refreshed, Audience Size, Refresh Count, Next Refresh, Actions
+- [ ] Add sortable column headers (all columns sortable)
+- [ ] Add refresh action button on each row
+- [ ] Update status badges (No Data = red, Completed = green)
+- [ ] Add pagination controls (rows per page + page navigation)
+- [ ] Remove fancy features that don't exist in AudienceLab
+- [ ] Test with real API data
+
+### Pixels Page - Carbon Copy
+- [ ] Add "Available Pixel Actions" box at top with 4 buttons: See Resolutions, Install, Webhook, Delete
+- [ ] Update table to show only 3 columns: Website Name, Website Url, Last Sync
+- [ ] Add sortable column headers (all 3 columns sortable)
+- [ ] Remove action buttons from table rows
+- [ ] Add pagination controls
+- [ ] Update "0 Pixels" counter display
+- [ ] Test with real API data
+
+### Testing & Deployment
+- [ ] Test Audiences page in browser
+- [ ] Test Pixels page in browser
+- [ ] Verify all features match AudienceLab exactly
+- [ ] Save checkpoint with changes
+- [ ] Push to GitHub

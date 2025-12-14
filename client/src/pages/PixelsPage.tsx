@@ -2,254 +2,345 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Copy, Plus, Trash2, CheckCircle, Code2, Search } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Loader2, Plus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { CreatePixelDialog } from "@/components/pixels/CreatePixelDialog";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type SortField = 'website_name' | 'website_url' | 'last_sync';
+type SortDirection = 'asc' | 'desc' | null;
 
 export default function PixelsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pixelToDelete, setPixelToDelete] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState<SortField>('website_name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   // Fetch pixels
   const { data: pixelsResponse, isLoading, error, refetch } = trpc.audienceLabAPI.pixels.list.useQuery();
 
-  // Delete pixel mutation
-  const deleteMutation = trpc.audienceLabAPI.pixels.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Pixel deleted successfully");
-      refetch();
-      setDeleteDialogOpen(false);
-      setPixelToDelete(null);
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete pixel: ${error.message}`);
-    },
-  });
-
   // Extract pixels array from response
   const pixels = pixelsResponse?.data || [];
 
-  // Filter pixels based on search
-  const filteredPixels = pixels.filter((pixel) =>
-    pixel.website_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pixel.website_url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pixel.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleDelete = (pixelId: string) => {
-    setPixelToDelete(pixelId);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (pixelToDelete) {
-      deleteMutation.mutate({ id: pixelToDelete });
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: null -> asc -> desc -> null
+      if (sortDirection === null) {
+        setSortDirection('asc');
+      } else if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortDirection(null);
+        setSortField('website_name'); // Reset to default
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
   };
 
-  const copyToClipboard = async (text: string, pixelId: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(pixelId);
-      toast.success("Install URL copied to clipboard");
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch (err) {
-      toast.error("Failed to copy to clipboard");
+  const handleSeeResolutions = () => {
+    toast.info('See Resolutions functionality coming soon');
+  };
+
+  const handleInstall = () => {
+    toast.info('Install functionality coming soon');
+  };
+
+  const handleWebhook = () => {
+    toast.info('Webhook functionality coming soon');
+  };
+
+  const handleDelete = () => {
+    toast.info('Delete functionality coming soon');
+  };
+
+  // Filter and sort pixels
+  let processedPixels = [...pixels];
+  
+  // Apply search filter
+  if (searchQuery) {
+    processedPixels = processedPixels.filter((pixel) =>
+      pixel.website_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pixel.website_url.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  // Apply sorting
+  if (sortDirection) {
+    processedPixels = processedPixels.sort((a, b) => {
+      let aVal, bVal;
+      
+      switch (sortField) {
+        case 'website_name':
+          aVal = a.website_name || '';
+          bVal = b.website_name || '';
+          break;
+        case 'website_url':
+          aVal = a.website_url || '';
+          bVal = b.website_url || '';
+          break;
+        case 'last_sync':
+          aVal = new Date(a.last_sync || 0).getTime();
+          bVal = new Date(b.last_sync || 0).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortDirection === 'asc') {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+  }
+
+  // Apply pagination
+  const totalItems = processedPixels.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedPixels = processedPixels.slice(startIndex, endIndex);
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3 h-3 ml-1 inline" />;
     }
+    if (sortDirection === 'asc') {
+      return <ArrowUp className="w-3 h-3 ml-1 inline" />;
+    }
+    if (sortDirection === 'desc') {
+      return <ArrowDown className="w-3 h-3 ml-1 inline" />;
+    }
+    return <ArrowUpDown className="w-3 h-3 ml-1 inline" />;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Code2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Pixels</h1>
-                <p className="text-sm text-gray-600">Manage your tracking pixels and install URLs</p>
-              </div>
-            </div>
-            <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Pixel
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Manage Pixels</h1>
+        </div>
+
+        {/* Available Pixel Actions Box */}
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Available Pixel Actions</h3>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={handleSeeResolutions}
+              className="border-gray-300"
+            >
+              See Resolutions
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleInstall}
+              className="border-gray-300"
+            >
+              Install
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleWebhook}
+              className="border-gray-300"
+            >
+              Webhook
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              className="border-gray-300 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              Delete
             </Button>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Search Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        {/* Search and Pixel Count */}
+        <div className="mb-6 flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-gray-900">{pixels.length}</span>
+            <span className="text-gray-600">Pixels</span>
+          </div>
+          <div className="flex-1">
             <Input
-              placeholder="Search pixels by name, URL, or ID..."
+              placeholder="Search by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="max-w-md"
             />
           </div>
+          <Button onClick={() => setCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            Create
+          </Button>
         </div>
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6 mb-8">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-red-900">Error Loading Pixels</h3>
-                <p className="text-sm text-red-700 mt-1">{error.message}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Loading State */}
         {isLoading && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
+          <div className="bg-white rounded-lg shadow p-12">
             <div className="flex justify-center items-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
           </div>
         )}
 
-        {/* Pixels Grid */}
-        {!isLoading && !error && (
-          <>
-            {filteredPixels.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {filteredPixels.map((pixel) => (
-                  <div key={pixel.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{pixel.website_name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{pixel.website_url}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(pixel.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* Pixel ID */}
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Pixel ID</p>
-                      <p className="text-sm text-gray-900 font-mono bg-gray-50 p-3 rounded-lg border border-gray-200">
-                        {pixel.id}
-                      </p>
-                    </div>
-
-                    {/* Install URL */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium text-gray-700">Install URL</p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(pixel.install_url, pixel.id)}
-                          className="h-8 px-3"
-                        >
-                          {copiedId === pixel.id ? (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-1 text-green-600" />
-                              <span className="text-sm text-green-600">Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4 mr-1" />
-                              <span className="text-sm">Copy</span>
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-gray-900 font-mono bg-gray-50 p-3 rounded-lg border border-gray-200 break-all">
-                        {pixel.install_url}
-                      </p>
-                    </div>
-
-                    {/* Last Sync */}
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Last Sync</p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(pixel.last_sync).toLocaleString()}
-                      </p>
-                    </div>
-
-                    {/* Webhook URL */}
-                    {pixel.webhook_url && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Webhook URL</p>
-                        <p className="text-xs text-gray-900 font-mono bg-gray-50 p-3 rounded-lg border border-gray-200 break-all">
-                          {pixel.webhook_url}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <Code2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">
-                  {searchQuery ? "No pixels found matching your search" : "No pixels yet. Create your first pixel to get started."}
-                </p>
-                {!searchQuery && (
-                  <Button
-                    onClick={() => setCreateDialogOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Pixel
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {/* Results Count */}
-            {filteredPixels.length > 0 && (
-              <div className="mt-8 text-center text-sm text-gray-600">
-                Showing {filteredPixels.length} of {pixels.length} pixels
-              </div>
-            )}
-          </>
+        {/* Error State */}
+        {error && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-red-900 mb-2">Error Loading Pixels</h3>
+            <p className="text-sm text-red-700">{error.message}</p>
+          </div>
         )}
 
-        {/* Info Card */}
-        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mt-8">
-          <h3 className="font-semibold text-blue-900 mb-2">
-            💡 About Pixels
-          </h3>
-          <ul className="space-y-2 text-sm text-blue-800">
-            <li>• Track visitor behavior and conversions on your websites</li>
-            <li>• Copy install URLs to embed tracking pixels on your pages</li>
-            <li>• Monitor last sync times to ensure pixels are active</li>
-            <li>• Configure webhook URLs for real-time event notifications</li>
-          </ul>
-        </div>
-      </main>
+        {/* Table */}
+        {!isLoading && !error && (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('website_name')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Website Name
+                      {getSortIcon('website_name')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('website_url')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Website Url
+                      {getSortIcon('website_url')}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('last_sync')}
+                      className="flex items-center hover:text-gray-700"
+                    >
+                      Last Sync
+                      {getSortIcon('last_sync')}
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedPixels.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                      {searchQuery ? 'No results.' : 'No results.'}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedPixels.map((pixel) => (
+                    <tr key={pixel.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {pixel.website_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {pixel.website_url}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(pixel.last_sync)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">Rows per page</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(value) => {
+                    setPageSize(parseInt(value));
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-16">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700">
+                  Page {totalPages === 0 ? 0 : page} of {totalPages}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1 || totalPages === 0}
+                  >
+                    «
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1 || totalPages === 0}
+                  >
+                    ‹
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages || totalPages === 0}
+                  >
+                    ›
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page >= totalPages || totalPages === 0}
+                  >
+                    »
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Create Pixel Dialog */}
       <CreatePixelDialog
@@ -260,28 +351,6 @@ export default function PixelsPage() {
           setCreateDialogOpen(false);
         }}
       />
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-white">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Pixel?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the pixel and remove
-              all tracking data associated with it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
