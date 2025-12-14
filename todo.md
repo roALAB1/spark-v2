@@ -689,3 +689,23 @@ See CHANGELOG_PAGE_TEST.md for comprehensive test results!
 - [x] Test all job control actions
 
 ✅ Job Control Actions complete! Pause, resume, delete with toast notifications and confirmation.
+
+
+---
+
+## Fix Enrichment API Endpoint
+
+- [x] Investigate tRPC router configuration in server/_core/index.ts
+- [x] Check middleware setup for /api/trpc routes
+- [x] Verify enrichment router is properly registered
+- [x] Test API endpoint returns JSON instead of HTML
+- [x] Verify enrichments page loads real data from API
+- [x] Test all enrichment CRUD operations
+
+✅ API endpoint fixed! Changes:
+- Updated dev script to run Express server with integrated Vite (tsx watch server/_core/index.ts)
+- Set NODE_ENV=development to enable Vite middleware integration
+- Added API route exclusion in Vite catch-all handler
+- tRPC now returns proper JSON responses
+- Enrichments page successfully loads data from API (showing 0 enrichments)
+- All stats cards, filters, and UI working correctly
