@@ -19,11 +19,16 @@
 
 AudienceVibe is a **developer-friendly dashboard** built on top of AudienceLab's API that demonstrates how customers can build custom solutions using modern web technologies and AI coding assistants like Cursor, GitHub Copilot, and v0.dev.
 
+### 🎯 Version 2.0.0 - Carbon Copy Implementation
+
+**NEW:** Audiences and Pixels pages are now **exact one-for-one replicas** of the AudienceLab dashboard at https://build.audiencelab.io. We've removed all custom features and matched the official platform structure precisely to ensure consistency, reliability, and ease of maintenance.
+
 ### Key Features
 
 - ✅ **Real API Integration** - Connects to live AudienceLab API
+- ✅ **Carbon Copy UI** - Exact replicas of AudienceLab dashboard pages
 - ✅ **Type-Safe** - Full TypeScript coverage with validated schemas
-- ✅ **Modern Stack** - Next.js 14, React 19, tRPC 11, Tailwind CSS 4
+- ✅ **Modern Stack** - React 19, tRPC 11, Tailwind CSS 4, shadcn/ui
 - ✅ **Zero Errors** - Validated development process with 100% test pass rate
 - ✅ **Production Ready** - Includes authentication, database, and deployment configs
 
@@ -33,9 +38,21 @@ AudienceVibe is a **developer-friendly dashboard** built on top of AudienceLab's
 
 ### Pages
 
-1. **Home Page** - Navigation dashboard with gradient design
-2. **Audiences Page** - List, search, and paginate 399+ audiences
-3. **Pixels Page** - Manage tracking pixels with copy-to-clipboard
+1. **Spark V2** - Smart Query Assistant with Intent Search and B2B Search modes
+2. **Audiences Page** - 7-column sortable table matching AudienceLab exactly
+   - Columns: Name, Status, Creation Date, Last Refreshed, Audience Size, Refresh Count, Next Refresh, Actions
+   - Status badges (red "No Data", green "Completed")
+   - Refresh action buttons
+   - Pagination controls
+3. **Pixels Page** - 3-column table with "Available Pixel Actions" box
+   - Action buttons: See Resolutions, Install, Webhook, Delete
+   - Columns: Website Name, Website Url, Last Sync
+   - Sortable headers
+   - Pagination controls
+4. **Enrichments Page** - Simple 3-column table for enrichment jobs
+   - Columns: Name, Status, Creation Date
+   - Search by name
+   - Upload functionality
 
 ### API Integration
 

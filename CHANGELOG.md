@@ -5,6 +5,83 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-13 (8946b8f6)
+
+### 🎯 Carbon Copy Implementation
+
+This major release transforms the Audiences and Pixels pages into exact one-for-one replicas of the AudienceLab dashboard, removing all custom features and matching the official platform structure precisely.
+
+### Changed
+
+#### Audiences Page - Complete Redesign
+- **Converted from card layout to table layout** - Now displays data in a clean, sortable 7-column table
+- **Added 7 data columns**: Name, Status, Creation Date, Last Refreshed, Audience Size, Refresh Count, Next Refresh, Actions
+- **Implemented sortable headers** - All columns except Status are sortable with visual indicators (↕️ ↑ ↓)
+- **Added status badges** - Red badge for "No Data", green badge for "Completed"
+- **Added refresh action buttons** - Each row has a refresh icon button in the Actions column
+- **Implemented pagination controls** - Rows per page dropdown (10/20/50/100) + navigation buttons (« ‹ › »)
+- **Simplified UI elements** - Changed "Create Audience" to "Create", page title to "Audience Lists"
+
+#### Pixels Page - Complete Redesign
+- **Added "Available Pixel Actions" box** - Prominent action box at top with 4 buttons: See Resolutions, Install, Webhook, Delete
+- **Converted from card grid to table layout** - Simplified from detailed cards to clean 3-column table
+- **Reduced to 3 data columns**: Website Name, Website Url, Last Sync
+- **Implemented sortable headers** - All 3 columns are sortable with visual indicators
+- **Added pixel counter** - Displays "X Pixels" count at top
+- **Implemented pagination controls** - Same controls as Audiences page
+- **Simplified UI elements** - Changed "Create Pixel" to "Create", page title to "Manage Pixels"
+
+### Removed
+
+#### Audiences Page
+- ❌ Gradient background header with icon
+- ❌ Subtitle text ("Manage your audience segments and filters")
+- ❌ Card-based layout with detailed information
+- ❌ Info card at bottom with tips
+- ❌ Delete buttons on each card
+- ❌ Detailed audience metadata display
+
+#### Pixels Page
+- ❌ Gradient background header with icon
+- ❌ Subtitle text ("Manage your tracking pixels and install URLs")
+- ❌ 2-column card grid layout
+- ❌ Pixel ID display on cards
+- ❌ Install URL display with copy buttons
+- ❌ Webhook URL display
+- ❌ Delete buttons on cards
+- ❌ Info card at bottom with tips
+
+### Added
+
+#### Documentation
+- **AUDIENCELAB_AUDIENCES_EXACT.md** - Comprehensive documentation of the exact AudienceLab Audiences page structure
+- **AUDIENCELAB_PIXEL_EXACT.md** - Comprehensive documentation of the exact AudienceLab Pixels page structure
+- **AUDIENCELAB_ENRICHMENT_EXACT.md** - Documentation confirming Enrichments page already matches AudienceLab
+- **CARBON_COPY_TEST.md** - Detailed testing results and comparison tables
+- **UPDATE_PAGES_COMPLETE.md** - Implementation summary and success criteria
+
+### Technical Details
+
+- **Client-side sorting and filtering** - Both pages implement efficient client-side data processing
+- **tRPC API integration** - Connected to `audienceLabAPI.audiences.list` and `audienceLabAPI.pixels.list`
+- **Loading states** - Proper loading spinners while fetching data
+- **Error handling** - Comprehensive error states for API failures
+- **TypeScript** - Zero TypeScript errors, fully typed components
+- **Responsive design** - Tables adapt to different screen sizes
+
+### Release Notes
+
+This release represents a fundamental shift in our approach. Instead of building custom features and adding our own spin, we've created exact one-for-one copies of the AudienceLab platform pages. This ensures:
+
+1. **Consistency** - Users familiar with AudienceLab will feel right at home
+2. **Reliability** - We match the proven UX patterns of the official platform
+3. **Maintainability** - Easier to keep in sync with AudienceLab updates
+4. **Foundation** - Solid base for future custom features after core functionality is confirmed
+
+The Audiences and Pixels pages are now carbon copies of the live AudienceLab dashboard at https://build.audiencelab.io, with all fancy features removed and structure matching exactly.
+
+---
+
 ## [1.1.0] - 2024-12-11
 
 ### Added - Spark V2 Smart Query Assistant

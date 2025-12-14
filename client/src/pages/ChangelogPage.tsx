@@ -13,6 +13,56 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "v2.0.0",
+    date: "2025-12-13",
+    checkpoint: "8946b8f6",
+    sections: [
+      {
+        type: "changed",
+        items: [
+          "Audiences Page: Converted from card layout to 7-column sortable table",
+          "Audiences: Added columns - Name, Status, Creation Date, Last Refreshed, Audience Size, Refresh Count, Next Refresh, Actions",
+          "Audiences: Implemented sortable headers with visual indicators (↕️ ↑ ↓)",
+          "Audiences: Added status badges (red 'No Data', green 'Completed')",
+          "Audiences: Added refresh action buttons on each row",
+          "Audiences: Implemented pagination controls (rows per page + navigation)",
+          "Pixels Page: Added 'Available Pixel Actions' box with 4 buttons",
+          "Pixels: Converted from card grid to 3-column table (Website Name, Website Url, Last Sync)",
+          "Pixels: Implemented sortable headers for all columns",
+          "Pixels: Added pixel counter display",
+          "Pixels: Implemented pagination controls",
+        ],
+      },
+      {
+        type: "removed",
+        items: [
+          "Audiences: Removed gradient background header with icon",
+          "Audiences: Removed subtitle text and info cards",
+          "Audiences: Removed card-based layout",
+          "Audiences: Removed delete buttons on cards",
+          "Pixels: Removed gradient background header with icon",
+          "Pixels: Removed 2-column card grid layout",
+          "Pixels: Removed Pixel ID, Install URL, and Webhook URL display on cards",
+          "Pixels: Removed copy-to-clipboard buttons",
+          "Pixels: Removed delete buttons on cards",
+        ],
+      },
+      {
+        type: "added",
+        items: [
+          "Documentation: AUDIENCELAB_AUDIENCES_EXACT.md - Exact structure documentation",
+          "Documentation: AUDIENCELAB_PIXEL_EXACT.md - Exact structure documentation",
+          "Documentation: AUDIENCELAB_ENRICHMENT_EXACT.md - Confirmation of matching structure",
+          "Documentation: CARBON_COPY_TEST.md - Comprehensive testing results",
+          "Documentation: UPDATE_PAGES_COMPLETE.md - Implementation summary",
+          "Client-side sorting and filtering for both pages",
+          "Proper loading states with spinners",
+          "Comprehensive error handling",
+        ],
+      },
+    ],
+  },
+  {
     version: "v0.8.0",
     date: "2025-12-13",
     checkpoint: "ccc89ad2",

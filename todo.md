@@ -863,3 +863,26 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [ ] Verify all features match AudienceLab exactly
 - [ ] Save checkpoint with changes
 - [ ] Push to GitHub
+
+
+---
+
+## GitHub Release & Documentation (December 13, 2025)
+
+### Documentation Updates
+- [ ] Create comprehensive CHANGELOG.md with all versions
+- [ ] Update README.md with latest features and screenshots
+- [ ] Add version tags and release notes
+- [ ] Update internal app changelog page
+
+### GitHub Operations
+- [ ] Commit all changes with descriptive message
+- [ ] Create git tag for v2.0.0 (Carbon Copy Release)
+- [ ] Push commits to GitHub
+- [ ] Push tags to GitHub
+- [ ] Create GitHub release with changelog
+
+### Internal App Updates
+- [ ] Update Changelog page in app with latest changes
+- [ ] Add version history to Changelog page
+- [ ] Test Changelog page displays correctly
