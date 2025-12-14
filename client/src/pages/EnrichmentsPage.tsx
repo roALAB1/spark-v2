@@ -391,7 +391,7 @@ export default function EnrichmentsPage() {
 
       {/* Enrichment Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-900 text-foreground">
           {selectedEnrichment && (
             <>
               <DialogHeader>
