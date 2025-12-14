@@ -305,6 +305,26 @@ export const audienceLabRouter = router({
       }),
 
     /**
+     * Download enrichment results as CSV
+     */
+    downloadResults: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const client = getClient();
+          // Fetch enrichment results from API
+          const results = await client.getEnrichmentResults(input.id);
+          return results;
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error.message || 'Failed to fetch enrichment results',
+            cause: error,
+          });
+        }
+      }),
+
+    /**
      * Delete an enrichment job
      */
     deleteJob: publicProcedure

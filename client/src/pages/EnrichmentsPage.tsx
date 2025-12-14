@@ -22,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import NewEnrichmentDialog from "@/components/NewEnrichmentDialog";
+import { arrayToCSV, downloadCSV, generateEnrichmentFilename } from "@/lib/csv";
 
 interface Enrichment {
   id: string;
@@ -117,6 +118,33 @@ export default function EnrichmentsPage() {
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this enrichment job? This action cannot be undone.")) {
       deleteMutation.mutate({ id });
+    }
+  };
+
+  const handleDownload = async (enrichment: Enrichment) => {
+    try {
+      toast.info("Preparing CSV export...");
+      
+      // Fetch enrichment results from API
+      const results = await trpc.audienceLabAPI.enrichment.downloadResults.query({ id: enrichment.id });
+      
+      // Convert to CSV
+      const csvContent = arrayToCSV(results.data || []);
+      
+      if (!csvContent) {
+        toast.error("No data available to export");
+        return;
+      }
+      
+      // Generate filename and download
+      const filename = generateEnrichmentFilename(enrichment.name);
+      downloadCSV(csvContent, filename);
+      
+      toast.success(`Downloaded ${filename}`);
+    } catch (error: any) {
+      toast.error("Failed to download results", {
+        description: error.message || "An error occurred while exporting the data",
+      });
     }
   };
 
@@ -592,7 +620,7 @@ export default function EnrichmentsPage() {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => toast.info("Download feature coming soon")}
+                    onClick={() => handleDownload(selectedEnrichment)}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download Results
