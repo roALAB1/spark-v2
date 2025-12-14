@@ -1040,3 +1040,25 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [x] Update button logic to only change fields NOT already set to DO_NOT_IMPORT
 - [x] Test that unmapped fields default to DO_NOT_IMPORT (changed detectFieldType return)
 - [x] Test that button only affects mapped fields (conditional mapping logic)
+
+
+---
+
+## Fix Modal Overlay and Submission Issues (CRITICAL)
+
+### Modal Overlay and Z-Index
+- [x] Increase modal overlay darkness (bg-black/90 instead of /80)
+- [x] Make modal content brighter/whiter (bg-white with shadow-2xl)
+- [x] Fix dropdown z-index bleeding through modal (modal z-[10000] > dropdown z-[100])
+- [x] Ensure modal has higher z-index than all other elements (overlay z-[9999], content z-[10000])
+
+### OR/AND Button Selection
+- [x] Make selected button more visually obvious (blue bg, white text)
+- [x] Add stronger visual feedback for active button (ring-2 ring-blue-600 ring-offset-2)
+- [x] Ensure button states are clear and unambiguous (conditional className)
+
+### Enrichment Submission
+- [x] Debug why Create button doesn't trigger API call (added console logging)
+- [ ] Fix enrichment submission flow (needs user testing)
+- [x] Add proper success/error notifications (already in handleModalSubmit)
+- [ ] Verify enrichment job is created in database (needs user testing)

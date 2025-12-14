@@ -26,9 +26,12 @@ export function StartEnrichmentModal({
   const [operator, setOperator] = useState<"OR" | "AND">("OR");
 
   const handleSubmit = () => {
+    console.log('handleSubmit called', { enrichmentName, operator });
     if (!enrichmentName.trim()) {
+      console.log('Enrichment name is empty, returning');
       return;
     }
+    console.log('Calling onSubmit with:', { enrichmentName, operator });
     onSubmit(enrichmentName, operator);
   };
 
@@ -64,7 +67,11 @@ export function StartEnrichmentModal({
                 type="button"
                 variant={operator === "OR" ? "default" : "outline"}
                 onClick={() => setOperator("OR")}
-                className="flex-1"
+                className={`flex-1 ${
+                  operator === "OR"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-600 ring-offset-2"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 OR
               </Button>
@@ -72,7 +79,11 @@ export function StartEnrichmentModal({
                 type="button"
                 variant={operator === "AND" ? "default" : "outline"}
                 onClick={() => setOperator("AND")}
-                className="flex-1"
+                className={`flex-1 ${
+                  operator === "AND"
+                    ? "bg-blue-600 hover:bg-blue-700 text-white ring-2 ring-blue-600 ring-offset-2"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 AND
               </Button>
