@@ -24,16 +24,45 @@ export function StartEnrichmentModal({
 }: StartEnrichmentModalProps) {
   const [enrichmentName, setEnrichmentName] = useState(defaultName);
   const [operator, setOperator] = useState<"OR" | "AND">("OR");
+  const [nameError, setNameError] = useState<string>("");
+
+  const validateName = (name: string): boolean => {
+    if (!name || name.trim().length === 0) {
+      setNameError("Enrichment name is required");
+      return false;
+    }
+    if (name.trim().length < 3) {
+      setNameError("Name must be at least 3 characters");
+      return false;
+    }
+    if (name.length > 100) {
+      setNameError("Name must be less than 100 characters");
+      return false;
+    }
+    setNameError("");
+    return true;
+  };
+
+  const handleNameChange = (value: string) => {
+    setEnrichmentName(value);
+    if (nameError) {
+      validateName(value);
+    }
+  };
 
   const handleSubmit = () => {
-    console.log('handleSubmit called', { enrichmentName, operator });
-    if (!enrichmentName.trim()) {
-      console.log('Enrichment name is empty, returning');
+    console.log('📝 [MODAL] Submit clicked:', { enrichmentName, operator });
+    
+    if (!validateName(enrichmentName)) {
+      console.error('❌ [MODAL VALIDATION] Name validation failed');
       return;
     }
-    console.log('Calling onSubmit with:', { enrichmentName, operator });
-    onSubmit(enrichmentName, operator);
+    
+    console.log('✅ [MODAL] Validation passed, calling onSubmit');
+    onSubmit(enrichmentName.trim(), operator);
   };
+
+  const isValid = enrichmentName.trim().length >= 3 && enrichmentName.length <= 100;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -49,10 +78,19 @@ export function StartEnrichmentModal({
             <Input
               id="enrichment-name"
               value={enrichmentName}
-              onChange={(e) => setEnrichmentName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Enter enrichment name"
               autoFocus
+              className={nameError ? "border-red-500" : ""}
             />
+            {nameError && (
+              <p className="text-sm text-red-600 mt-1">{nameError}</p>
+            )}
+            {enrichmentName.trim().length > 0 && !nameError && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ Valid name ({enrichmentName.trim().length} characters)
+              </p>
+            )}
           </div>
 
           {/* Operator Selection */}
@@ -98,12 +136,14 @@ export function StartEnrichmentModal({
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} type="button">
             Cancel
           </Button>
-          <Button
+          <Button 
             onClick={handleSubmit}
-            disabled={!enrichmentName.trim()}
+            disabled={!isValid}
+            type="button"
+            className={!isValid ? "opacity-50 cursor-not-allowed" : ""}
           >
             Create
           </Button>

@@ -107,17 +107,32 @@ export default function EnrichmentUploadPage() {
   };
 
   const handleSubmitClick = () => {
+    console.log('🎯 [SUBMIT] Button clicked');
+    
     // Validate mappings
     const validation = validateMappings(fieldMappings);
     if (!validation.isValid) {
+      console.error('❌ [VALIDATION] Invalid field mappings:', validation.errors);
       toast.error(validation.errors[0]);
       return;
     }
 
     if (!csvData || !file) {
+      console.error('❌ [VALIDATION] No CSV file uploaded');
       toast.error('No CSV file uploaded');
       return;
     }
+
+    // Count mapped fields
+    const mappedCount = fieldMappings.filter(
+      m => m.mappedField && m.mappedField !== '' && m.mappedField !== 'DO_NOT_IMPORT'
+    ).length;
+    
+    console.log('✅ [VALIDATION] All checks passed:', {
+      csvRows: csvData.rows.length,
+      mappedFields: mappedCount,
+      fieldMappings: fieldMappings.map(m => ({ csv: m.csvColumn, mapped: m.mappedField }))
+    });
 
     // Show modal for enrichment name and operator
     setShowModal(true);

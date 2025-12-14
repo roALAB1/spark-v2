@@ -1114,3 +1114,34 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [x] Fix the root cause of submission failure (no fix needed - it works correctly)
 - [x] Test submission again to verify fix (enrichment created successfully)
 - [x] Verify enrichment appears in enrichments list ("Test Enrichment Browser Debug" showing as PROCESSING)
+
+
+---
+
+## Fix Bad Request Error on Enrichment Submission (CRITICAL)
+
+### Root Cause: AND Operator Bug
+- [x] Test AND operator to reproduce Bad Request error (NO BUG - both operators work!)
+- [x] Check if AND operator value is being sent correctly ("AND" uppercase string)
+- [x] Verify API accepts "AND" vs "and" vs other format (accepts "AND" and "OR")
+- [x] Fix operator value format issue (no fix needed)
+- [x] Test both OR and AND operators (both work correctly)
+
+### Add Error Handling
+- [x] Add detailed error messages showing what went wrong (comprehensive logging)
+- [x] Display API error response to user in toast (extracts error.message, error.data.message, error.shape.message)
+- [x] Add error boundary for submission errors (try/catch with detailed logging)
+- [x] Log full error details to console for debugging (❌ [API ERROR] with full error object)
+
+### Add Client-Side Validation
+- [x] Validate enrichment name (min 3 characters, max 100)
+- [x] Validate at least one field is mapped (checks mappedColumns.length > 0)
+- [x] Validate operator is selected (always selected, defaults to OR)
+- [x] Show validation errors before submission (red border + error message)
+- [x] Disable Create button until validation passes (disabled={!isValid})
+
+### Add Request/Response Logging
+- [x] Log full API request payload to console (🌐 [API REQUEST] with full payload)
+- [x] Log API response (success or error) to console (✅ [API RESPONSE] or ❌ [API ERROR])
+- [x] Add request ID for tracking (timestamp in logs)
+- [x] Make logs easily readable for debugging (emoji prefixes: 🚀 🎯 ✅ ❌ 🌐)
