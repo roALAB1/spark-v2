@@ -240,10 +240,231 @@ All components use existing dependencies:
 
 ---
 
+## [v0.8.0] - 2025-12-13 (ccc89ad2)
+
+### Added
+- **Real-time Progress Polling** on Enrichments page
+  - Automatic data refresh every 5 seconds when page is visible
+  - Intelligent polling that stops when tab is inactive (`refetchIntervalInBackground: false`)
+  - Pulsing green "Live" badge in header when active jobs exist
+  - "Updated [time]" timestamp showing last data fetch
+  - Smooth updates without flickering for stats cards, progress bars, and status badges
+
+### Technical Details
+- Implemented `refetchInterval: 5000` on tRPC query
+- Added `dataUpdatedAt` tracking with useEffect hook
+- Optimized for performance with background polling disabled
+
+---
+
+## [v0.7.0] - 2025-12-13 (bfc09b28)
+
+### Added
+- **API Integration** for Enrichments and Audiences pages
+  - Connected Enrichments page to real AudienceLab API via `trpc.audienceLabAPI.enrichment.getJobs.useQuery()`
+  - Audiences page already connected with full CRUD operations
+  - Loading states with spinner animations
+  - Error handling with user-friendly messages
+  - Empty states with helpful guidance
+
+### Changed
+- Replaced mock enrichment data with live API calls
+- Transformed API response to match UI interface
+
+### Documentation
+- Created `API_INTEGRATION_TEST.md` with comprehensive test results
+- Created `TRPC_API_REFERENCE.md` documenting all available procedures
+
+### Technical Details
+- API key secured server-side (never exposed to client)
+- Pagination support (page size: 100)
+- Zero TypeScript errors
+
+---
+
+## [v0.6.0] - 2025-12-13 (ec328bd9)
+
+### Added
+- **Complete UI Redesign** matching Spark V2 theme
+  - Redesigned Audiences page with consistent styling
+  - Redesigned Enrichments page with consistent styling
+  - Redesigned Pixels page with consistent styling
+  - Unified gradient backgrounds (gray-50 to gray-100)
+  - Consistent white headers with blue gradient icons
+  - Standardized card styling (rounded-xl, shadow-sm, border-gray-200)
+  - Unified typography (text-2xl for titles, text-sm for subtitles)
+  - Professional blue info cards on all pages
+
+### Documentation
+- Created `SPARK_V2_STYLE_GUIDE.md` documenting design patterns
+- Created `UI_REDESIGN_TEST.md` with test results
+
+### Technical Details
+- Zero TypeScript errors
+- Fully tested in browser
+
+---
+
+## [v0.5.0] - 2025-12-13 (81742e3e)
+
+### Added
+- **Enrichment Details Modal**
+  - Comprehensive modal displaying enrichment job details
+  - Progress section with visual bar and percentage
+  - Details grid (Created date, Duration, Success Rate, Type)
+  - Scrollable activity log with color-coded messages (info/success/warning)
+  - Contextual action buttons based on status:
+    - Active: Pause + Delete
+    - Pending: Start + Delete
+    - Completed: Download Results + Delete
+  - Multiple close methods (button/X/backdrop/ESC key)
+  - Smooth animations and professional design
+  - Max-width 3xl, max-height 80vh with scroll
+
+### Fixed
+- Modal background styling - added explicit `bg-white` and `dark:bg-gray-900`
+- Modal content now clearly visible against dark overlay
+
+### Documentation
+- Created `MODAL_TEST.md` with comprehensive test results
+- Created `MODAL_FIX_TEST.md` documenting background fix
+
+### Technical Details
+- Added Dialog and Separator components from shadcn/ui
+- Zero TypeScript errors
+
+---
+
+## [v0.4.0] - 2025-12-13 (ce6a3e95)
+
+### Added
+- **Advanced Filtering System** for Enrichments page
+  - Real-time search by enrichment name
+  - Status filter buttons (All, Active, Pending, Completed) with color coding
+  - Type filter dropdown (All Types, Contact, Company, Demographic)
+  - Combined filtering (all filters work together)
+  - Clear Filters button (appears when filters active)
+  - Dynamic results counter ("Showing X of Y enrichments")
+  - Professional empty state with helpful message
+  - Instant client-side filtering
+
+### Documentation
+- Created `FILTERING_TEST.md` with comprehensive test results
+
+### Technical Details
+- Added Select component from shadcn/ui
+- Zero TypeScript errors
+
+---
+
+## [v0.3.0] - 2025-12-13 (74836c6c)
+
+### Added
+- **Enrichments Page** with full UI
+  - Navigation link in sidebar with Database icon
+  - Route `/enrichments` in App.tsx
+  - 4 stats cards (Total Enrichments, Active Jobs, Records Processed, Success Rate)
+  - Search bar for filtering enrichments
+  - 3 mock enrichment cards with progress bars
+  - Status badges (Active, Completed, Pending)
+  - Type badges (Contact, Company, Demographic)
+  - "New Enrichment" button
+  - Clean, professional design matching other pages
+
+### Documentation
+- Created `ENRICHMENTS_TEST.md` with test results
+
+### Technical Details
+- Added Badge component from shadcn/ui
+- Zero TypeScript errors
+
+---
+
+## [v0.2.0] - 2025-12-13 (c0f2292e)
+
+### Added
+- **Navigation Menu** with sidebar
+  - DashboardLayout component with 256px sidebar
+  - Navigation links: Home, Spark V2, Audiences, Pixels
+  - AudienceLab Vibe branding with gradient icon
+  - Active state highlighting (blue background)
+  - Routes for all pages in App.tsx
+  - Home route redirects to Spark V2
+
+### Fixed
+- **Nested Anchor Tag Error** in DashboardLayout
+  - Changed `<a>` to `<div>` inside `<Link>` components
+  - Added `cursor-pointer` class to maintain clickable appearance
+  - No console errors
+
+### Documentation
+- Created `NAVIGATION_TEST.md` with test results
+- Created `GITHUB_PUSH_SUMMARY.md` documenting GitHub sync
+
+### Technical Details
+- Zero TypeScript errors
+- All navigation tested in browser
+
+---
+
+## [v0.1.0] - 2025-12-13 (30df0d4f)
+
+### Added
+- **Initial Project Setup**
+  - Web-static template with React 19 + Tailwind 4
+  - shadcn/ui components integrated
+  - tRPC client configured
+  - Basic routing with Wouter
+  - Theme provider (light mode default)
+  - Error boundary
+  - Toast notifications (Sonner)
+
+### Features
+- **Spark V2 Page** (SparkPage.tsx)
+  - Query configuration with Intent Search and B2B Search modes
+  - Query input with character/word counter
+  - Advanced options section
+  - Validation results panel
+  - Clean, modern UI with gradient backgrounds
+
+- **Audiences Page** (AudiencesPage.tsx)
+  - List view with search functionality
+  - Create audience dialog
+  - Delete audience with confirmation
+  - Pagination support
+  - Loading and error states
+
+- **Pixels Page** (PixelsPage.tsx)
+  - Pixel tracking management interface
+  - Create pixel functionality
+  - Installation instructions
+  - Event tracking display
+
+### Technical Stack
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- shadcn/ui components
+- tRPC for API calls
+- Wouter for routing
+- Sonner for toasts
+
+---
+
 ## Version History
 
-- **v1.1.0** (2024-12-11): Added Spark V2 Smart Query Assistant with 7-rule validation system
-- **v1.0.0** (2024-12-10): Initial release with contact enrichment dashboard
+| Version | Checkpoint | Date | Key Feature |
+|---------|-----------|------|-------------|
+| v0.8.0 | ccc89ad2 | 2025-12-13 | Real-time polling with live updates |
+| v0.7.0 | bfc09b28 | 2025-12-13 | API integration for Enrichments & Audiences |
+| v0.6.0 | ec328bd9 | 2025-12-13 | Complete UI redesign matching Spark V2 |
+| v0.5.0 | 81742e3e | 2025-12-13 | Enrichment details modal with actions |
+| v0.4.0 | ce6a3e95 | 2025-12-13 | Advanced filtering system |
+| v0.3.0 | 74836c6c | 2025-12-13 | Enrichments page with full UI |
+| v0.2.0 | c0f2292e | 2025-12-13 | Navigation menu and routing |
+| v0.1.0 | 30df0d4f | 2025-12-13 | Initial project setup |
+| v1.1.0 | - | 2024-12-11 | Spark V2 Smart Query Assistant |
+| v1.0.0 | - | 2024-12-10 | Initial contact enrichment dashboard |
 
 ---
 
