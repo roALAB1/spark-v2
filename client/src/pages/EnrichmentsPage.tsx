@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Database, TrendingUp, Users, Mail } from "lucide-react";
+import { Search, Plus, Database, TrendingUp, Users, X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,6 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Enrichment {
   id: string;
@@ -64,13 +71,43 @@ const statusColors = {
   completed: "bg-green-500/10 text-green-500 border-green-500/20",
 };
 
+type StatusFilter = "all" | "active" | "pending" | "completed";
+type TypeFilter = "all" | "contact" | "company" | "demographic";
+
 export default function EnrichmentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [enrichments] = useState<Enrichment[]>(mockEnrichments);
 
-  const filteredEnrichments = enrichments.filter((enrichment) =>
-    enrichment.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Combined filtering logic
+  const filteredEnrichments = enrichments.filter((enrichment) => {
+    // Search filter
+    const matchesSearch = enrichment.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    // Status filter
+    const matchesStatus =
+      statusFilter === "all" || enrichment.status === statusFilter;
+
+    // Type filter
+    const matchesType =
+      typeFilter === "all" || enrichment.type === typeFilter;
+
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all";
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,8 +166,9 @@ export default function EnrichmentsPage() {
           </Card>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -141,6 +179,92 @@ export default function EnrichmentsPage() {
               className="pl-10"
             />
           </div>
+
+          {/* Filter Row */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Filter className="w-4 h-4" />
+              <span className="font-medium">Filters:</span>
+            </div>
+
+            {/* Status Filter Buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={statusFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("all")}
+              >
+                All Status
+              </Button>
+              <Button
+                variant={statusFilter === "active" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("active")}
+                className={
+                  statusFilter === "active"
+                    ? ""
+                    : "border-blue-500/20 text-blue-500 hover:bg-blue-500/10"
+                }
+              >
+                Active
+              </Button>
+              <Button
+                variant={statusFilter === "pending" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("pending")}
+                className={
+                  statusFilter === "pending"
+                    ? ""
+                    : "border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/10"
+                }
+              >
+                Pending
+              </Button>
+              <Button
+                variant={statusFilter === "completed" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter("completed")}
+                className={
+                  statusFilter === "completed"
+                    ? ""
+                    : "border-green-500/20 text-green-500 hover:bg-green-500/10"
+                }
+              >
+                Completed
+              </Button>
+            </div>
+
+            {/* Type Filter Dropdown */}
+            <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as TypeFilter)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="contact">Contact</SelectItem>
+                <SelectItem value="company">Company</SelectItem>
+                <SelectItem value="demographic">Demographic</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Clear Filters
+              </Button>
+            )}
+
+            {/* Results Count */}
+            <div className="ml-auto text-sm text-muted-foreground">
+              Showing {filteredEnrichments.length} of {enrichments.length} enrichments
+            </div>
+          </div>
         </div>
 
         {/* Enrichments List */}
@@ -149,9 +273,17 @@ export default function EnrichmentsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  No enrichments found. Create your first enrichment to get started.
+                <p className="text-lg font-medium mb-2">No enrichments found</p>
+                <p className="text-muted-foreground mb-4">
+                  {hasActiveFilters
+                    ? "Try adjusting your filters or search query."
+                    : "Create your first enrichment to get started."}
                 </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={clearFilters}>
+                    Clear Filters
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
