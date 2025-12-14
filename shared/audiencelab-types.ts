@@ -42,11 +42,26 @@ export interface AudiencesListResponse {
   page_size: number;
 }
 
+/**
+ * Official format from Mintlify documentation
+ * https://audiencelab.mintlify.app/api-reference/audience/create-audience
+ */
 export interface CreateAudienceRequest {
-  name: string;
-  description?: string;
-  filters: AudienceFilter[];
-  webhook_url?: string;
+  name: string;                    // REQUIRED - Audience name
+  filters: {                       // REQUIRED - Filter criteria
+    age?: {
+      minAge?: number;
+      maxAge?: number;
+    };
+    city?: string[];
+    businessProfile?: {
+      industry?: string[];
+    };
+    // Add other filter fields as needed
+    [key: string]: any;            // Allow other filter fields
+  };
+  segment?: string[];              // OPTIONAL - Segment IDs
+  days_back?: number;              // OPTIONAL - Days to look back
 }
 
 // ============================================================================

@@ -74,8 +74,25 @@ export class AudienceLabClient {
       requestInit.body = JSON.stringify(options.body);
     }
 
+    // Debug logging (only in test environment)
+    if (process.env.NODE_ENV === 'test' || process.env.DEBUG_API === 'true') {
+      console.log(`\n[API Client] ${method} ${url.toString()}`);
+      console.log('[API Client] Headers:', JSON.stringify({
+        ...requestInit.headers,
+        'X-API-Key': this.apiKey.substring(0, 10) + '...',
+      }, null, 2));
+      if (requestInit.body) {
+        console.log('[API Client] Body:', requestInit.body);
+      }
+    }
+
     try {
       const response = await fetch(url.toString(), requestInit);
+      
+      // Debug logging for response
+      if (process.env.NODE_ENV === 'test' || process.env.DEBUG_API === 'true') {
+        console.log(`[API Client] Response status: ${response.status} ${response.statusText}`);
+      }
 
       // Handle successful responses
       if (response.ok) {
@@ -83,12 +100,28 @@ export class AudienceLabClient {
       }
 
       // Handle error responses
-      const errorData: APIError = await response.json().catch(() => ({
-        error: {
-          code: 'UNKNOWN_ERROR',
-          message: response.statusText,
-        },
-      }));
+      let errorData: APIError;
+      try {
+        errorData = await response.json();
+      } catch {
+        // If response is not JSON, create error from status text
+        errorData = {
+          error: {
+            code: 'UNKNOWN_ERROR',
+            message: response.statusText || `HTTP ${response.status}`,
+          },
+        };
+      }
+
+      // Ensure error data has the expected structure
+      if (!errorData.error || !errorData.error.code) {
+        errorData = {
+          error: {
+            code: 'UNKNOWN_ERROR',
+            message: errorData.error?.message || response.statusText || `HTTP ${response.status}`,
+          },
+        };
+      }
 
       // Retry on 429 (rate limit) and 500 (server error)
       if (
@@ -137,9 +170,15 @@ export class AudienceLabClient {
 
   /**
    * Create a new audience
+   * 
+   * Official format from Mintlify documentation:
+   * https://audiencelab.mintlify.app/api-reference/audience/create-audience
+   * 
+   * @param data - Audience creation request with name, filters, segment, days_back
+   * @returns Object with audienceId
    */
-  async createAudience(data: CreateAudienceRequest): Promise<Audience> {
-    return this.request<Audience>('POST', '/audiences', { body: data });
+  async createAudience(data: CreateAudienceRequest): Promise<{ audienceId: string }> {
+    return this.request<{ audienceId: string }>('POST', '/audiences', { body: data });
   }
 
   /**

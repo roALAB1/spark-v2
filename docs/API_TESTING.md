@@ -60,6 +60,7 @@ We have **three levels of testing** for the AudienceLab API integration:
 | Endpoint | Method | Status | Error | Next Steps |
 |----------|--------|--------|-------|------------|
 | `/enrich/contact` | POST | ❌ FAILED | 400 Bad Request: "Malformed JSON/Unknown Field" | Investigate request format via UI network traffic |
+| `/audiences` | POST | ⚠️ PARTIAL | 400 Bad Request: "audience enqueue failed: <nil>" | Endpoint exists, auth works, but internal processing fails |
 
 ### 🔄 **Untested Endpoints**
 

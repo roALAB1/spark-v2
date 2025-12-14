@@ -290,3 +290,32 @@ Fixed: Rewrote CSV parser to use character-by-character parsing with quote state
 - [x] Captured REAL format from dashboard: POST /home/{teamSlug}
 - [x] Documented actual request format in REAL_POST_AUDIENCES_FORMAT.md
 - [x] Discovered: api.audiencelab.io/audiences doesn't work, use build.audiencelab.io/home/{teamSlug}
+
+
+---
+
+## Update API Client with Real POST Format
+
+- [ ] Update audiencelab-client.ts createAudience method to use POST /home/{teamSlug}
+- [ ] Change request body to array format with accountId and name
+- [ ] Add method to get team slug and account ID
+- [ ] Update TypeScript types for new request format
+- [ ] Remove filters parameter from createAudience (filters added separately)
+- [ ] Write tests for updated createAudience method
+- [ ] Test with real API using test account
+- [ ] Update documentation with new API client usage
+
+
+---
+
+## Clean Up Incorrect API Assumptions
+
+- [x] Delete REAL_POST_AUDIENCES_FORMAT.md (dashboard endpoint, not API)
+- [x] Delete POST_AUDIENCES_TESTING_RESULTS.md (based on wrong assumptions)
+- [x] Delete all test files with incorrect formats
+- [x] Save official Mintlify documentation as single source of truth
+- [x] Update API client to use official POST /audiences format
+- [x] Update TypeScript types to match official format
+- [x] Write tests using official format
+- [x] Test with real API and verify success (3/3 tests passed)
+- [x] Update all documentation references to point to official docs

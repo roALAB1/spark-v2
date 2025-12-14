@@ -71,20 +71,26 @@ export const audienceLabRouter = router({
 
     /**
      * Create a new audience
+     * 
+     * Official format from Mintlify documentation:
+     * https://audiencelab.mintlify.app/api-reference/audience/create-audience
      */
     create: publicProcedure
       .input(
         z.object({
-          name: z.string().min(1),
-          description: z.string().optional(),
-          filters: z.array(
-            z.object({
-              field: z.string(),
-              operator: z.enum(['equals', 'contains', 'greater_than', 'less_than', 'in', 'not_in']),
-              value: z.union([z.string(), z.number(), z.array(z.string())]),
-            })
-          ),
-          webhook_url: z.string().url().optional(),
+          name: z.string().min(1, 'Name is required'),
+          filters: z.object({
+            age: z.object({
+              minAge: z.number().optional(),
+              maxAge: z.number().optional(),
+            }).optional(),
+            city: z.array(z.string()).optional(),
+            businessProfile: z.object({
+              industry: z.array(z.string()).optional(),
+            }).optional(),
+          }),
+          segment: z.array(z.string()).optional(),
+          days_back: z.number().optional(),
         })
       )
       .mutation(async ({ input }) => {
