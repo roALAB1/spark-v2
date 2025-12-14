@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { StartEnrichmentModal } from "@/components/StartEnrichmentModal";
 import { Upload, X, ArrowLeftRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,8 +26,11 @@ export default function EnrichmentUploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<ParsedCSV | null>(null);
   const [fieldMappings, setFieldMappings] = useState<FieldMapping[]>([]);
+  const [showModal, setShowModal] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const createJobMutation = trpc.audienceLabAPI.enrichment.createJob.useMutation();
 
   const handleFileSelect = async (selectedFile: File) => {
     // Validate file type
@@ -102,7 +106,7 @@ export default function EnrichmentUploadPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitClick = () => {
     // Validate mappings
     const validation = validateMappings(fieldMappings);
     if (!validation.isValid) {
@@ -115,17 +119,31 @@ export default function EnrichmentUploadPage() {
       return;
     }
 
+    // Show modal for enrichment name and operator
+    setShowModal(true);
+  };
+
+  const handleModalSubmit = async (name: string, operator: "OR" | "AND") => {
+    console.log('handleModalSubmit called with:', { name, operator });
+    setShowModal(false);
+
+    if (!csvData || !file) {
+      console.error('No CSV data or file');
+      toast.error('No CSV file uploaded');
+      return;
+    }
+
     try {
       // Transform CSV data + mappings to API format
       const mappedColumns = fieldMappings
         .filter(m => m.mappedField && m.mappedField !== '')
-        .map(m => m.mappedField);
+        .map(m => m.mappedField); // Keep UPPERCASE for columns
 
       const records = csvData.rows.map(row => {
         const record: any = {};
         fieldMappings.forEach(mapping => {
           if (mapping.mappedField && mapping.mappedField !== '') {
-            // Convert UPPERCASE field to lowercase for API
+            // Convert UPPERCASE field to lowercase for records
             const apiField = mapping.mappedField.toLowerCase();
             const value = row[mapping.csvColumn];
             if (value && value.trim() !== '') {
@@ -137,14 +155,16 @@ export default function EnrichmentUploadPage() {
       });
 
       // Create enrichment job
-      const result = await trpc.audienceLab.enrichment.createJob.mutate({
-        name: file.name.replace('.csv', ''),
+      console.log('Calling API with:', { name, operator, recordCount: records.length, columns: mappedColumns });
+      const result = await createJobMutation.mutateAsync({
+        name,
         records,
-        operator: 'OR',
+        operator,
         columns: mappedColumns,
       });
+      console.log('API response:', result);
 
-      toast.success('Enrichment job created successfully');
+      toast.success('Data uploaded successfully and queued for enrichment');
       setLocation('/enrichments');
     } catch (error: any) {
       console.error('Failed to create enrichment job:', error);
@@ -259,7 +279,7 @@ export default function EnrichmentUploadPage() {
               Detected {csvData.rowCount.toLocaleString()} rows
             </div>
             <Button
-              onClick={handleSubmit}
+              onClick={handleSubmitClick}
               disabled={!isValid}
               className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
@@ -268,6 +288,14 @@ export default function EnrichmentUploadPage() {
           </div>
         </div>
       )}
+
+      {/* Start Enrichment Modal */}
+      <StartEnrichmentModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleModalSubmit}
+        defaultName={file?.name.replace('.csv', '') || ''}
+      />
     </div>
   );
 }

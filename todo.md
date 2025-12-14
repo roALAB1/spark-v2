@@ -938,3 +938,48 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [x] Implement API submission handler
 - [ ] Test end-to-end enrichment job creation (needs debugging)
 - [ ] Verify success/error handling
+
+
+---
+
+## Carbon Copy Methodology - Enrichment API Capture
+
+### Capture Phase
+- [ ] Navigate to AudienceLab dashboard enrichment page
+- [ ] Open DevTools Network tab
+- [ ] Upload test CSV through AudienceLab flow
+- [ ] Capture exact API request (headers, body, URL)
+- [ ] Document request payload structure
+- [ ] Document response structure
+- [ ] Save network HAR file for reference
+
+### Implementation Phase
+- [ ] Create StartEnrichmentModal component
+- [ ] Add enrichment name input field to modal
+- [ ] Add operator selection (OR/AND toggle buttons)
+- [ ] Add Cancel and Create buttons to modal
+- [ ] Update EnrichmentUploadPage to show modal on Submit click
+- [ ] Fix field name transformations (columns: UPPERCASE, records: lowercase)
+- [ ] Update API call to include name and operator
+- [ ] Test with real API credentials
+- [ ] Verify 202 response handling
+- [ ] Verify success toast and redirect
+- [ ] Test error responses (400, 401, 500)
+
+### Standard Process Documentation
+- [ ] Document carbon copy workflow for future features
+- [ ] Create template for capturing API calls
+- [ ] Establish testing checklist
+
+
+---
+
+## Fix EnrichmentUploadPage Rendering Issue
+- [ ] Check EnrichmentUploadPage for JavaScript errors
+- [ ] Verify all imports are correct
+- [ ] Test component in isolation
+- [ ] Check if DashboardLayout is causing issues
+- [ ] Add error boundary to catch rendering errors
+- [ ] Test with simplified version first
+- [ ] Verify CSV parser and field mapping utilities work
+- [ ] Check browser console for runtime errors
