@@ -983,3 +983,37 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [ ] Test with simplified version first
 - [ ] Verify CSV parser and field mapping utilities work
 - [ ] Check browser console for runtime errors
+
+
+---
+
+## Fix Dropdown Menu Issues in Enrichment Upload Page (URGENT)
+
+### Z-Index and Styling Issues
+- [x] Fix z-index issue causing dropdowns to appear behind other elements (z-[9999])
+- [x] Ensure dropdown menus have proper stacking context (white bg, shadow-xl)
+- [x] Add hover states that are visible and clear (hover:bg-blue-50)
+- [x] Fix dropdown positioning to prevent overlap (z-index hierarchy)
+
+### Do Not Import Functionality
+- [x] Ensure "Do Not Import" option appears at the top of all dropdowns (value="")
+- [x] Make "Do Not Import" the default option for unmapped fields (empty string)
+- [x] Add visual distinction for "Do Not Import" option (gray text, gray hover)
+
+### Search Functionality
+- [x] Make search input more visible and prominent in dropdowns (sticky top-0)
+- [x] Ensure search input has proper focus states (border separator)
+- [x] Test search filtering works correctly (filters on type)
+- [x] Add placeholder text to search input ("Search fields...")
+
+### Bulk Actions
+- [x] Add "DO NOT IMPORT ALL" button above the mapping table (red button in header)
+- [x] Implement bulk action to set all dropdowns to "Do Not Import" (sets mappedField to '')
+- [x] Add confirmation or undo functionality for bulk actions (toast notification)
+
+### Testing
+- [x] Test dropdown interactions (hover states, selection, search)
+- [x] Verify all dropdowns work correctly without overlap
+- [x] Test "Do Not Import" functionality
+- [x] Test "DO NOT IMPORT ALL" button
+- [ ] Test on different screen sizes (needs user testing)

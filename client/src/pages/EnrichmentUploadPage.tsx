@@ -244,10 +244,25 @@ export default function EnrichmentUploadPage() {
         {/* Field Mapping Section */}
         {csvData && fieldMappings.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            {/* Section Header */}
-            <div className="flex items-center gap-2 mb-6">
-              <ArrowLeftRight className="w-5 h-5 text-gray-700" />
-              <h2 className="text-lg font-semibold text-gray-900">Map CSV Columns to Fields</h2>
+            {/* Section Header with Bulk Action */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <ArrowLeftRight className="w-5 h-5 text-gray-700" />
+                <h2 className="text-lg font-semibold text-gray-900">Map CSV Columns to Fields</h2>
+              </div>
+              <Button
+                onClick={() => {
+                  setFieldMappings(prev =>
+                    prev.map(mapping => ({ ...mapping, mappedField: '', isAutoMapped: false }))
+                  );
+                  toast.success('All fields set to "Do Not Import"');
+                }}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                DO NOT IMPORT ALL
+              </Button>
             </div>
 
             {/* Column Headers */}
@@ -334,17 +349,21 @@ function FieldMappingRow({ mapping, onMappingChange }: FieldMappingRowProps) {
           <SelectTrigger className="border-2 border-yellow-400 bg-yellow-50">
             <SelectValue placeholder="Select field..." />
           </SelectTrigger>
-          <SelectContent>
-            <div className="p-2">
+          <SelectContent className="z-[100]">
+            <div className="p-2 sticky top-0 bg-white border-b border-gray-200">
               <Input
                 placeholder="Search fields..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="mb-2"
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
+            <SelectItem value="" className="font-medium text-gray-500 hover:bg-gray-100">
+              Do Not Import
+            </SelectItem>
             {filteredFields.map(field => (
-              <SelectItem key={field.value} value={field.value}>
+              <SelectItem key={field.value} value={field.value} className="hover:bg-blue-50">
                 {field.label}
               </SelectItem>
             ))}
