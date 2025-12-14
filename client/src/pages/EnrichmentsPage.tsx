@@ -2,13 +2,6 @@ import { useState } from "react";
 import { Search, Plus, Database, TrendingUp, Users, X, Filter, Calendar, Clock, CheckCircle2, Pause, Play, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -25,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 
 interface Enrichment {
   id: string;
@@ -83,9 +77,9 @@ const enrichmentTypeIcons = {
 };
 
 const statusColors = {
-  active: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  completed: "bg-green-500/10 text-green-500 border-green-500/20",
+  active: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  pending: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  completed: "bg-green-500/10 text-green-600 border-green-500/20",
 };
 
 type StatusFilter = "all" | "active" | "pending" | "completed";
@@ -99,27 +93,16 @@ export default function EnrichmentsPage() {
   const [selectedEnrichment, setSelectedEnrichment] = useState<Enrichment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Combined filtering logic
+  // Filter enrichments
   const filteredEnrichments = enrichments.filter((enrichment) => {
-    // Search filter
-    const matchesSearch = enrichment.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-
-    // Status filter
-    const matchesStatus =
-      statusFilter === "all" || enrichment.status === statusFilter;
-
-    // Type filter
-    const matchesType =
-      typeFilter === "all" || enrichment.type === typeFilter;
-
+    const matchesSearch = enrichment.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || enrichment.status === statusFilter;
+    const matchesType = typeFilter === "all" || enrichment.type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
   // Check if any filters are active
-  const hasActiveFilters =
-    searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all";
+  const hasActiveFilters = searchQuery !== "" || statusFilter !== "all" || typeFilter !== "all";
 
   // Clear all filters
   const clearFilters = () => {
@@ -128,266 +111,236 @@ export default function EnrichmentsPage() {
     setTypeFilter("all");
   };
 
-  // Open modal with selected enrichment
-  const openEnrichmentDetails = (enrichment: Enrichment) => {
+  // Calculate stats
+  const totalEnrichments = enrichments.length;
+  const activeJobs = enrichments.filter((e) => e.status === "active").length;
+  const totalRecordsProcessed = enrichments.reduce((sum, e) => sum + e.recordsProcessed, 0);
+  const totalRecords = enrichments.reduce((sum, e) => sum + e.totalRecords, 0);
+  const successRate = totalRecords > 0 ? Math.round((totalRecordsProcessed / totalRecords) * 100) : 0;
+
+  const handleEnrichmentClick = (enrichment: Enrichment) => {
     setSelectedEnrichment(enrichment);
     setIsModalOpen(true);
   };
 
-  // Close modal
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setTimeout(() => setSelectedEnrichment(null), 200); // Clear after animation
-  };
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="border-b border-border bg-card">
-        <div className="container py-8">
+      <header className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Enrichments
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Enhance your data with additional contact and company information
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <Database className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Enrichments</h1>
+                <p className="text-sm text-gray-600">Enhance your data with additional contact and company information</p>
+              </div>
             </div>
-            <Button size="lg" className="gap-2">
-              <Plus className="w-5 h-5" />
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />
               New Enrichment
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Stats Cards */}
-      <div className="container py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Total Enrichments</CardDescription>
-              <CardTitle className="text-3xl">
-                {enrichments.length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Active Jobs</CardDescription>
-              <CardTitle className="text-3xl">
-                {enrichments.filter((e) => e.status === "active").length}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Records Processed</CardDescription>
-              <CardTitle className="text-3xl">
-                {enrichments.reduce((sum, e) => sum + e.recordsProcessed, 0).toLocaleString()}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Success Rate</CardDescription>
-              <CardTitle className="text-3xl">94%</CardTitle>
-            </CardHeader>
-          </Card>
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-sm text-gray-600 mb-1">Total Enrichments</div>
+            <div className="text-3xl font-bold text-gray-900">{totalEnrichments}</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-sm text-gray-600 mb-1">Active Jobs</div>
+            <div className="text-3xl font-bold text-blue-600">{activeJobs}</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-sm text-gray-600 mb-1">Records Processed</div>
+            <div className="text-3xl font-bold text-gray-900">{totalRecordsProcessed.toLocaleString()}</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <div className="text-sm text-gray-600 mb-1">Success Rate</div>
+            <div className="text-3xl font-bold text-green-600">{successRate}%</div>
+          </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="mb-6 space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search enrichments by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Filter Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Filter className="w-4 h-4" />
-              <span className="font-medium">Filters:</span>
+        {/* Search and Filters Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search enrichments by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
 
-            {/* Status Filter Buttons */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant={statusFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("all")}
-              >
-                All Status
-              </Button>
-              <Button
-                variant={statusFilter === "active" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("active")}
-                className={
-                  statusFilter === "active"
-                    ? ""
-                    : "border-blue-500/20 text-blue-500 hover:bg-blue-500/10"
-                }
-              >
-                Active
-              </Button>
-              <Button
-                variant={statusFilter === "pending" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("pending")}
-                className={
-                  statusFilter === "pending"
-                    ? ""
-                    : "border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/10"
-                }
-              >
-                Pending
-              </Button>
-              <Button
-                variant={statusFilter === "completed" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("completed")}
-                className={
-                  statusFilter === "completed"
-                    ? ""
-                    : "border-green-500/20 text-green-500 hover:bg-green-500/10"
-                }
-              >
-                Completed
-              </Button>
-            </div>
+            {/* Filter Row */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Filter className="w-4 h-4" />
+                <span className="font-medium">Filters:</span>
+              </div>
 
-            {/* Type Filter Dropdown */}
-            <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value as TypeFilter)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="contact">Contact</SelectItem>
-                <SelectItem value="company">Company</SelectItem>
-                <SelectItem value="demographic">Demographic</SelectItem>
-              </SelectContent>
-            </Select>
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={statusFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                  className={statusFilter === "all" ? "bg-blue-600 hover:bg-blue-700" : ""}
+                >
+                  All Status
+                </Button>
+                <Button
+                  variant={statusFilter === "active" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("active")}
+                  className={
+                    statusFilter === "active"
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "border-blue-500/20 text-blue-600 hover:bg-blue-500/10"
+                  }
+                >
+                  Active
+                </Button>
+                <Button
+                  variant={statusFilter === "pending" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("pending")}
+                  className={
+                    statusFilter === "pending"
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "border-yellow-500/20 text-yellow-600 hover:bg-yellow-500/10"
+                  }
+                >
+                  Pending
+                </Button>
+                <Button
+                  variant={statusFilter === "completed" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("completed")}
+                  className={
+                    statusFilter === "completed"
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "border-green-500/20 text-green-600 hover:bg-green-500/10"
+                  }
+                >
+                  Completed
+                </Button>
+              </div>
 
-            {/* Clear Filters Button */}
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="gap-2"
-              >
-                <X className="w-4 h-4" />
-                Clear Filters
-              </Button>
-            )}
+              {/* Type Filter Dropdown */}
+              <Select value={typeFilter} onValueChange={(value: string) => setTypeFilter(value as TypeFilter)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="contact">Contact</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="demographic">Demographic</SelectItem>
+                </SelectContent>
+              </Select>
 
-            {/* Results Count */}
-            <div className="ml-auto text-sm text-muted-foreground">
-              Showing {filteredEnrichments.length} of {enrichments.length} enrichments
+              {/* Clear Filters Button */}
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Clear Filters
+                </Button>
+              )}
+
+              {/* Results Count */}
+              <div className="ml-auto text-sm text-gray-600">
+                Showing {filteredEnrichments.length} of {enrichments.length} enrichments
+              </div>
             </div>
           </div>
         </div>
 
         {/* Enrichments List */}
-        <div className="space-y-4">
-          {filteredEnrichments.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Database className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">No enrichments found</p>
-                <p className="text-muted-foreground mb-4">
-                  {hasActiveFilters
-                    ? "Try adjusting your filters or search query."
-                    : "Create your first enrichment to get started."}
-                </p>
-                {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters}>
-                    Clear Filters
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            filteredEnrichments.map((enrichment) => {
+        {filteredEnrichments.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">
+              {hasActiveFilters ? "No enrichments found matching your filters." : "No enrichments yet. Create your first enrichment to get started."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredEnrichments.map((enrichment) => {
+              const progress = (enrichment.recordsProcessed / enrichment.totalRecords) * 100;
               const Icon = enrichmentTypeIcons[enrichment.type];
-              const progress =
-                (enrichment.recordsProcessed / enrichment.totalRecords) * 100;
 
               return (
-                <Card 
-                  key={enrichment.id} 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => openEnrichmentDetails(enrichment)}
+                <div
+                  key={enrichment.id}
+                  onClick={() => handleEnrichmentClick(enrichment)}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow"
                 >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Icon className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-xl">
-                            {enrichment.name}
-                          </CardTitle>
-                          <CardDescription className="mt-1">
-                            Created on {new Date(enrichment.createdAt).toLocaleDateString()}
-                          </CardDescription>
-                        </div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-gray-700" />
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={statusColors[enrichment.status]}
-                      >
-                        {enrichment.status.charAt(0).toUpperCase() +
-                          enrichment.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Progress Bar */}
                       <div>
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className="font-medium">
-                            {enrichment.recordsProcessed.toLocaleString()} /{" "}
-                            {enrichment.totalRecords.toLocaleString()} records
-                          </span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Type Badge */}
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">
-                          {enrichment.type.charAt(0).toUpperCase() +
-                            enrichment.type.slice(1)}{" "}
-                          Enrichment
-                        </Badge>
+                        <h3 className="text-lg font-semibold text-gray-900">{enrichment.name}</h3>
+                        <p className="text-sm text-gray-600">Created on {new Date(enrichment.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <Badge variant="outline" className={statusColors[enrichment.status]}>
+                      {enrichment.status.charAt(0).toUpperCase() + enrichment.status.slice(1)}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Progress</span>
+                      <span className="font-medium text-gray-900">
+                        {enrichment.recordsProcessed.toLocaleString()} / {enrichment.totalRecords.toLocaleString()} records
+                      </span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+
+                  <div className="mt-4">
+                    <Badge variant="secondary" className="text-xs">
+                      {enrichment.type.charAt(0).toUpperCase() + enrichment.type.slice(1)} Enrichment
+                    </Badge>
+                  </div>
+                </div>
               );
-            })
-          )}
+            })}
+          </div>
+        )}
+
+        {/* Info Card */}
+        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mt-8">
+          <h3 className="font-semibold text-blue-900 mb-2">
+            💡 About Enrichments
+          </h3>
+          <ul className="space-y-2 text-sm text-blue-800">
+            <li>• Enrich your contact and company data with additional information</li>
+            <li>• Track enrichment progress and success rates in real-time</li>
+            <li>• Pause, resume, or cancel enrichment jobs at any time</li>
+            <li>• Download enriched data when jobs are completed</li>
+          </ul>
         </div>
-      </div>
+      </main>
 
       {/* Enrichment Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -418,23 +371,22 @@ export default function EnrichmentsPage() {
 
               {/* Progress Section */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Progress</h3>
+                <h3 className="font-semibold text-foreground">Progress</h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Records Processed</span>
                     <span className="font-medium">
-                      {selectedEnrichment.recordsProcessed.toLocaleString()} / {selectedEnrichment.totalRecords.toLocaleString()}
+                      {selectedEnrichment.recordsProcessed} / {selectedEnrichment.totalRecords}
                     </span>
                   </div>
-                  <div className="h-3 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${(selectedEnrichment.recordsProcessed / selectedEnrichment.totalRecords) * 100}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{((selectedEnrichment.recordsProcessed / selectedEnrichment.totalRecords) * 100).toFixed(1)}% complete</span>
-                    <span>Est. {selectedEnrichment.totalRecords - selectedEnrichment.recordsProcessed} remaining</span>
+                  <Progress value={(selectedEnrichment.recordsProcessed / selectedEnrichment.totalRecords) * 100} className="h-2" />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {((selectedEnrichment.recordsProcessed / selectedEnrichment.totalRecords) * 100).toFixed(1)}% complete
+                    </span>
+                    <span className="text-muted-foreground">
+                      Est. {selectedEnrichment.totalRecords - selectedEnrichment.recordsProcessed} remaining
+                    </span>
                   </div>
                 </div>
               </div>
@@ -443,39 +395,41 @@ export default function EnrichmentsPage() {
 
               {/* Details Section */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Details</h3>
+                <h3 className="font-semibold text-foreground">Details</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>Created</span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Created</div>
+                      <div className="text-sm font-medium">
+                        {new Date(selectedEnrichment.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </div>
                     </div>
-                    <p className="font-medium">{new Date(selectedEnrichment.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>Duration</span>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Duration</div>
+                      <div className="text-sm font-medium">
+                        {selectedEnrichment.status === "completed" ? "2h 15m" : "1h 45m (ongoing)"}
+                      </div>
                     </div>
-                    <p className="font-medium">
-                      {selectedEnrichment.status === "completed" ? "2h 15m" : "1h 45m (ongoing)"}
-                    </p>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Success Rate</span>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Success Rate</div>
+                      <div className="text-sm font-medium">
+                        {selectedEnrichment.status === "completed" ? "100%" : "94.2%"}
+                      </div>
                     </div>
-                    <p className="font-medium">
-                      {selectedEnrichment.status === "completed" ? "100%" : "94.2%"}
-                    </p>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Database className="w-4 h-4" />
-                      <span>Type</span>
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <div className="text-xs text-muted-foreground">Type</div>
+                      <div className="text-sm font-medium capitalize">{selectedEnrichment.type}</div>
                     </div>
-                    <p className="font-medium capitalize">{selectedEnrichment.type}</p>
                   </div>
                 </div>
               </div>
@@ -484,17 +438,18 @@ export default function EnrichmentsPage() {
 
               {/* Activity Log */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Activity Log</h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <h3 className="font-semibold text-foreground">Activity Log</h3>
+                <div className="max-h-48 overflow-y-auto space-y-2 border rounded-lg p-4 bg-muted/30">
                   {mockLogs.map((log, index) => (
-                    <div key={index} className="flex items-start gap-3 text-sm p-2 rounded-lg hover:bg-muted/50">
-                      <span className="text-muted-foreground min-w-[120px]">{log.time}</span>
+                    <div key={index} className="text-sm flex gap-2 hover:bg-muted/50 p-1 rounded">
+                      <span className="text-muted-foreground whitespace-nowrap">{log.time}</span>
                       <span className={
                         log.type === "success" ? "text-green-600" :
                         log.type === "warning" ? "text-yellow-600" :
-                        log.type === "error" ? "text-red-600" :
                         "text-foreground"
-                      }>{log.message}</span>
+                      }>
+                        {log.message}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -503,32 +458,46 @@ export default function EnrichmentsPage() {
               <Separator className="my-4" />
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  {selectedEnrichment.status === "active" && (
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Pause className="w-4 h-4" />
+              <div className="flex justify-end gap-2">
+                {selectedEnrichment.status === "active" && (
+                  <>
+                    <Button variant="outline" size="sm">
+                      <Pause className="w-4 h-4 mr-2" />
                       Pause
                     </Button>
-                  )}
-                  {selectedEnrichment.status === "pending" && (
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Play className="w-4 h-4" />
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </>
+                )}
+                {selectedEnrichment.status === "pending" && (
+                  <>
+                    <Button variant="outline" size="sm">
+                      <Play className="w-4 h-4 mr-2" />
                       Start
                     </Button>
-                  )}
-                  {selectedEnrichment.status === "completed" && (
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Download className="w-4 h-4" />
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </>
+                )}
+                {selectedEnrichment.status === "completed" && (
+                  <>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
                       Download Results
                     </Button>
-                  )}
-                  <Button variant="outline" size="sm" className="gap-2 text-destructive hover:bg-destructive/10">
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </Button>
-                </div>
-                <Button onClick={closeModal}>Close</Button>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
+                  Close
+                </Button>
               </div>
             </>
           )}
