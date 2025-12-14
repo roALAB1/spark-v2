@@ -886,3 +886,38 @@ See SIMPLIFIED_ENRICHMENTS_TEST.md and AUDIENCELAB_UPLOAD_RESEARCH.md for detail
 - [ ] Update Changelog page in app with latest changes
 - [ ] Add version history to Changelog page
 - [ ] Test Changelog page displays correctly
+
+
+---
+
+## Enrichment Flow Carbon Copy (December 13, 2025)
+
+### Exploration & Documentation
+- [ ] Navigate to AudienceLab enrichment upload page
+- [ ] Document exact CSV upload interface
+- [ ] Document field detection/mapping interface
+- [ ] Document intelligent pre-mapping behavior
+- [ ] Document enrichment job submission flow
+- [ ] Screenshot all steps of the process
+- [ ] Create AUDIENCELAB_ENRICHMENT_FLOW_EXACT.md
+
+### Implementation
+- [x] Create csvParser.ts utility with parseCSV and analyzeColumn functions
+- [x] Create fieldMapping.ts utility with intelligent detection logic
+- [x] Create EnrichmentUploadPage.tsx component
+- [x] Implement CSV upload interface (drag & drop)
+- [x] Create FieldMappingRow component
+- [x] Build three-column mapping interface
+- [x] Add dropdown with search functionality
+- [x] Implement data completeness calculation
+- [x] Add validation logic (at least one field mapped)
+- [x] Implement submit handler with API integration
+- [x] Add route /enrichments/upload to App.tsx
+- [x] Update Enrichments page Upload button to link to new page
+
+### Testing
+- [ ] Test CSV upload with sample file
+- [ ] Verify field detection works
+- [ ] Verify intelligent pre-mapping
+- [ ] Test enrichment job submission
+- [ ] Save checkpoint
