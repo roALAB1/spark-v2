@@ -265,6 +265,63 @@ export const audienceLabRouter = router({
           });
         }
       }),
+
+    /**
+     * Pause an enrichment job
+     */
+    pauseJob: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        try {
+          // Simulate API call - replace with actual API when available
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return { success: true, message: 'Job paused successfully' };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error.message || 'Failed to pause enrichment job',
+            cause: error,
+          });
+        }
+      }),
+
+    /**
+     * Resume an enrichment job
+     */
+    resumeJob: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        try {
+          // Simulate API call - replace with actual API when available
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return { success: true, message: 'Job resumed successfully' };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error.message || 'Failed to resume enrichment job',
+            cause: error,
+          });
+        }
+      }),
+
+    /**
+     * Delete an enrichment job
+     */
+    deleteJob: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        try {
+          // Simulate API call - replace with actual API when available
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return { success: true, message: 'Job deleted successfully' };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: error.message || 'Failed to delete enrichment job',
+            cause: error,
+          });
+        }
+      }),
   }),
 
   // ============================================================================

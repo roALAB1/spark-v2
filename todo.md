@@ -654,3 +654,38 @@ See REALTIME_POLLING_TEST.md for comprehensive test documentation!
 - Zero TypeScript errors
 
 See CHANGELOG_PAGE_TEST.md for comprehensive test results!
+
+
+---
+
+## Implement New Enrichment Creation Wizard
+
+- [x] Create NewEnrichmentDialog component
+- [x] Add multi-step wizard UI (Step 1: Upload, Step 2: Configure, Step 3: Review)
+- [x] Implement CSV file upload with validation
+- [x] Add enrichment type selection (Contact/Company/Demographic)
+- [x] Add batch size configuration
+- [x] Add priority settings
+- [x] Implement form validation
+- [x] Connect to tRPC create mutation (simulated)
+- [x] Add success/error toast notifications
+- [x] Test wizard flow end-to-end
+
+✅ New Enrichment Wizard complete! 3-step wizard with file upload, configuration, and review.
+
+---
+
+## Implement Job Control Actions
+
+- [x] Add pause mutation to tRPC router
+- [x] Add resume mutation to tRPC router
+- [x] Add delete mutation to tRPC router
+- [x] Implement pause action in EnrichmentsPage
+- [x] Implement resume action in EnrichmentsPage
+- [x] Implement delete action with confirmation
+- [x] Add toast notifications for all actions
+- [x] Add loading states during mutations
+- [x] Handle error states gracefully
+- [x] Test all job control actions
+
+✅ Job Control Actions complete! Pause, resume, delete with toast notifications and confirmation.

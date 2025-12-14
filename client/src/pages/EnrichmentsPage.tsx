@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import NewEnrichmentDialog from "@/components/NewEnrichmentDialog";
 
 interface Enrichment {
   id: string;
@@ -62,7 +63,62 @@ export default function EnrichmentsPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [selectedEnrichment, setSelectedEnrichment] = useState<Enrichment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewEnrichmentOpen, setIsNewEnrichmentOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  // Job control mutations
+  const pauseMutation = trpc.audienceLabAPI.enrichment.pauseJob.useMutation({
+    onSuccess: () => {
+      toast.success("Job paused successfully");
+      refetch();
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to pause job", {
+        description: error.message,
+      });
+    },
+  });
+
+  const resumeMutation = trpc.audienceLabAPI.enrichment.resumeJob.useMutation({
+    onSuccess: () => {
+      toast.success("Job resumed successfully");
+      refetch();
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to resume job", {
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteMutation = trpc.audienceLabAPI.enrichment.deleteJob.useMutation({
+    onSuccess: () => {
+      toast.success("Job deleted successfully");
+      refetch();
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error("Failed to delete job", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handlePause = (id: string) => {
+    pauseMutation.mutate({ id });
+  };
+
+  const handleResume = (id: string) => {
+    resumeMutation.mutate({ id });
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Are you sure you want to delete this enrichment job? This action cannot be undone.")) {
+      deleteMutation.mutate({ id });
+    }
+  };
 
   // Fetch enrichment jobs from API with real-time polling
   const { data: jobsResponse, isLoading, error, refetch, dataUpdatedAt } = trpc.audienceLabAPI.enrichment.getJobs.useQuery(
@@ -154,7 +210,7 @@ export default function EnrichmentsPage() {
                 </p>
               </div>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsNewEnrichmentOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Enrichment
             </Button>
@@ -353,7 +409,7 @@ export default function EnrichmentsPage() {
                     : "No enrichments yet. Create your first enrichment to get started."}
                 </p>
                 {!hasActiveFilters && (
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsNewEnrichmentOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Enrichment
                   </Button>
@@ -511,26 +567,46 @@ export default function EnrichmentsPage() {
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 {selectedEnrichment.status === "active" && (
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePause(selectedEnrichment.id)}
+                    disabled={pauseMutation.isPending}
+                  >
                     <Pause className="w-4 h-4 mr-2" />
-                    Pause
+                    {pauseMutation.isPending ? "Pausing..." : "Pause"}
                   </Button>
                 )}
                 {selectedEnrichment.status === "pending" && (
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleResume(selectedEnrichment.id)}
+                    disabled={resumeMutation.isPending}
+                  >
                     <Play className="w-4 h-4 mr-2" />
-                    Start
+                    {resumeMutation.isPending ? "Starting..." : "Start"}
                   </Button>
                 )}
                 {selectedEnrichment.status === "completed" && (
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast.info("Download feature coming soon")}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Download Results
                   </Button>
                 )}
-                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => handleDelete(selectedEnrichment.id)}
+                  disabled={deleteMutation.isPending}
+                >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
                 </Button>
               </div>
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>
@@ -540,6 +616,13 @@ export default function EnrichmentsPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* New Enrichment Dialog */}
+      <NewEnrichmentDialog
+        open={isNewEnrichmentOpen}
+        onOpenChange={setIsNewEnrichmentOpen}
+        onSuccess={() => refetch()}
+      />
     </div>
   );
 }
